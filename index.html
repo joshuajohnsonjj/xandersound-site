@@ -96,6 +96,13 @@
       object-fit: cover; object-position: 50% 30%;
       -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 45%);
               mask-image: linear-gradient(to right, transparent 0%, #000 45%);
+      will-change: transform, opacity;
+      transform: translate3d(var(--portrait-px, 60px), 0, 0);
+      opacity: 0;
+      animation: heroPortraitIn 1.4s cubic-bezier(.16,.84,.28,1) .1s forwards;
+    }
+    @keyframes heroPortraitIn {
+      to { transform: translate3d(0, 0, 0); opacity: 1; }
     }
     .hero-fade {
       position: absolute; inset: 0;
@@ -116,6 +123,16 @@
       line-height: .78;
       letter-spacing: -.01em;
       text-transform: uppercase;
+      will-change: transform, opacity;
+      transform: translate3d(-60px, 0, 0);
+      opacity: 0;
+      animation: heroWordmarkIn 1.4s cubic-bezier(.16,.84,.28,1) .1s forwards;
+    }
+    @keyframes heroWordmarkIn {
+      to { transform: translate3d(0, 0, 0); opacity: 1; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .hero-portrait, .hero-wordmark { animation: none; transform: none; opacity: 1; }
     }
     .hero-pill {
       display: flex; align-items: center; gap: 16px;
@@ -1320,8 +1337,37 @@
 
     /* ─── Nav scroll + fade-in ─────────────────────────── */
     const nav = $('nav');
+    /* ─── Hero parallax ───────────────────────────────── */
+    const heroPortrait = document.querySelector('.hero-portrait');
+    const heroWordmark = document.querySelector('.hero-wordmark');
+    const heroGlow = document.querySelector('.hero-glow');
+    // Once the intro animations finish, clear them so inline transforms (parallax) take effect.
+    [heroPortrait, heroWordmark].forEach((el) => {
+      if (!el) return;
+      el.addEventListener('animationend', () => {
+        el.style.animation = 'none';
+        el.style.opacity = '1';
+        el.style.transform = 'translate3d(0,0,0)';
+      }, { once: true });
+    });
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let heroTicking = false;
+    function updateHeroParallax() {
+      const y = window.scrollY;
+      // Only apply while hero is roughly in view
+      if (y > 1000) { heroTicking = false; return; }
+      const p = Math.min(y, 900);
+      if (heroPortrait) heroPortrait.style.transform = `translate3d(${p * 0.054}px, ${p * -0.034}px, 0)`;
+      if (heroWordmark) heroWordmark.style.transform = `translate3d(${p * -0.04}px, ${p * 0.08}px, 0)`;
+      if (heroGlow) heroGlow.style.transform = `translate3d(0, ${p * 0.10}px, 0)`;
+      heroTicking = false;
+    }
     window.addEventListener('scroll', () => {
       nav.classList.toggle('scrolled', window.scrollY > 60);
+      if (!prefersReduced && !heroTicking) {
+        heroTicking = true;
+        requestAnimationFrame(updateHeroParallax);
+      }
     }, { passive: true });
     const io = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
