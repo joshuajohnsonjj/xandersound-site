@@ -1,0 +1,1679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="XANDER — Melodic techno for the hour after midnight.">
+  <meta name="robots" content="noindex, nofollow">
+  <title>XANDER — WIP</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%230a0908'/%3E%3Ctext x='32' y='47' font-family='Impact,Haettenschweiler,Arial Black,sans-serif' font-size='52' font-weight='900' text-anchor='middle' fill='%23ece8e2'%3EX%3C/text%3E%3C/svg%3E">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='28' fill='%230a0908'/%3E%3Ctext x='90' y='132' font-family='Impact,Haettenschweiler,Arial Black,sans-serif' font-size='148' font-weight='900' text-anchor='middle' fill='%23ece8e2'%3EX%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #0a0908;
+      --text:        #ece8e2;
+      --muted:       #8a857d;
+      --line:        rgba(236,232,226,.12);
+      --line-strong: rgba(236,232,226,.30);
+      --accent:      oklch(0.74 0.14 60);
+      --accent-glow: oklch(0.74 0.14 60 / .22);
+      --accent-soft: oklch(0.74 0.14 60 / .16);
+      --wave-off:    rgba(236,232,226,.22);
+      --pad-x:       56px;
+      --fplayer-h:   0px;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Geist', system-ui, sans-serif;
+      font-weight: 400;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    body.fplayer-open { padding-bottom: var(--fplayer-h); }
+    a { color: inherit; text-decoration: none; transition: opacity .2s; }
+    a:hover { opacity: .85; }
+    input { font: inherit; background: none; border: none; outline: none; color: inherit; }
+    input::placeholder { color: inherit; opacity: .5; }
+    button { font: inherit; background: none; border: none; color: inherit; cursor: pointer; }
+    ::selection { background: var(--accent); color: var(--bg); }
+
+    .mono { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; letter-spacing: .2em; text-transform: uppercase; }
+
+    /* ─── NAV ─────────────────────────────────────────── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+      display: grid; grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      padding: 32px var(--pad-x);
+      font-family: 'Geist Mono', monospace;
+      font-size: 12px; letter-spacing: .2em; text-transform: uppercase;
+      transition: background .3s, backdrop-filter .3s, border-color .3s, padding .3s;
+      border-bottom: 1px solid transparent;
+    }
+    nav.scrolled {
+      background: rgba(10,9,8,.92);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--line);
+      padding: 20px var(--pad-x);
+    }
+    .nav-brand { font-weight: 500; }
+    .nav-links { display: flex; gap: 36px; color: var(--muted); }
+    .nav-links a:hover { color: var(--text); opacity: 1; }
+    .nav-cta { display: flex; justify-content: flex-end; }
+    .nav-cta a {
+      padding: 10px 18px;
+      border: 1px solid var(--line-strong);
+      border-radius: 100px;
+      white-space: nowrap;
+    }
+
+    /* ─── HERO ────────────────────────────────────────── */
+    .hero {
+      position: relative;
+      height: 900px;
+      overflow: hidden;
+      background: var(--bg);
+    }
+    .hero-glow {
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 55% 70% at 66% -5%, var(--accent-glow), transparent 70%);
+      animation: breathe 6s ease-in-out infinite;
+    }
+    @keyframes breathe {
+      0%, 100% { opacity: .8; }
+      50%      { opacity: 1; }
+    }
+    .hero-portrait {
+      position: absolute; right: 0; top: 0;
+      width: 940px; height: 900px;
+      object-fit: cover; object-position: 50% 30%;
+      -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 45%);
+              mask-image: linear-gradient(to right, transparent 0%, #000 45%);
+      will-change: transform, opacity;
+      transform: translate3d(var(--portrait-px, 60px), 0, 0);
+      opacity: 0;
+      animation: heroPortraitIn 1.4s cubic-bezier(.16,.84,.28,1) .1s forwards;
+    }
+    @keyframes heroPortraitIn {
+      to { transform: translate3d(0, 0, 0); opacity: 1; }
+    }
+    .hero-fade {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, var(--bg) 4%, transparent 45%);
+      pointer-events: none;
+    }
+    .hero-bottom {
+      position: absolute; left: 40px; right: 40px; bottom: 36px;
+      z-index: 2;
+      display: flex; align-items: flex-end; justify-content: space-between;
+      gap: 32px;
+    }
+    .hero-wordmark {
+      margin: 0;
+      font-family: 'Big Shoulders Display', sans-serif;
+      font-weight: 900;
+      font-size: clamp(120px, 26vw, 400px);
+      line-height: .78;
+      letter-spacing: -.01em;
+      text-transform: uppercase;
+      will-change: transform, opacity;
+      transform: translate3d(-60px, 0, 0);
+      opacity: 0;
+      animation: heroWordmarkIn 1.4s cubic-bezier(.16,.84,.28,1) .1s forwards;
+    }
+    @keyframes heroWordmarkIn {
+      to { transform: translate3d(0, 0, 0); opacity: 1; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .hero-portrait, .hero-wordmark { animation: none; transform: none; opacity: 1; }
+    }
+    .hero-pill {
+      display: flex; align-items: center; gap: 16px;
+      padding: 14px 14px 14px 22px;
+      border: 1px solid rgba(236,232,226,.18);
+      border-radius: 100px;
+      background: rgba(10,9,8,.6);
+      backdrop-filter: blur(10px);
+      margin-bottom: 24px;
+      flex-shrink: 0;
+    }
+    .hero-pill .lines { display: flex; flex-direction: column; font-family: 'Geist Mono', monospace; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; }
+    .hero-pill .lines .top { color: var(--muted); }
+    .play-btn {
+      width: 48px; height: 48px; border-radius: 50%;
+      background: var(--accent);
+      display: grid; place-items: center;
+      flex-shrink: 0;
+      transition: transform .2s;
+    }
+    .play-btn:hover { transform: scale(1.05); }
+    .play-btn:disabled { opacity: .35; cursor: default; transform: none; }
+    .play-btn .triangle {
+      width: 0; height: 0;
+      border-left: 13px solid var(--bg);
+      border-top: 8px solid transparent;
+      border-bottom: 8px solid transparent;
+      margin-left: 3px;
+    }
+    .play-btn .pause { display: flex; gap: 4px; }
+    .play-btn .pause span { width: 4px; height: 14px; background: var(--bg); }
+
+    /* ─── SECTIONS ────────────────────────────────────── */
+    section.page {
+      padding-top: 180px;
+      padding-left: var(--pad-x);
+      padding-right: var(--pad-x);
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity .8s ease, transform .8s ease;
+    }
+    section.page.is-visible { opacity: 1; transform: translateY(0); }
+    section.page.first { padding-top: 160px; }
+
+    .section-header {
+      display: flex; align-items: center; gap: 24px;
+      margin-bottom: 56px;
+      font-family: 'Geist Mono', monospace;
+      font-size: 12px; letter-spacing: .2em; text-transform: uppercase;
+      color: var(--muted);
+    }
+    .section-header .name { color: var(--text); }
+    .section-header .rule { flex: 1; height: 1px; background: var(--line); }
+    .section-header .extra { color: var(--muted); }
+    .section-header .extra.chip {
+      padding: 4px 10px;
+      border: 1px dashed var(--muted);
+      border-radius: 4px;
+    }
+    .section-header.tight { margin-bottom: 24px; }
+
+    /* ─── FEATURED ────────────────────────────────────── */
+    .featured {
+      display: grid; grid-template-columns: 560px minmax(0,1fr);
+      gap: 80px; align-items: end;
+    }
+    .featured-art-wrap {
+      position: relative;
+      cursor: pointer;
+    }
+    .featured-art-glow {
+      position: absolute; inset: -60px;
+      background: radial-gradient(circle at 50% 50%, var(--accent-soft), transparent 65%);
+      z-index: 0;
+    }
+    .featured-art {
+      position: relative; z-index: 1;
+      width: 560px; height: 560px;
+      object-fit: cover; display: block;
+    }
+    .featured-art-overlay {
+      position: absolute; inset: 0; z-index: 2;
+      display: grid; place-items: center;
+      background: rgba(0,0,0,0);
+      transition: background .3s;
+    }
+    .featured-art-wrap:hover .featured-art-overlay { background: rgba(0,0,0,.25); }
+    .featured-art-play {
+      width: 120px; height: 120px; border-radius: 50%;
+      background: rgba(236,232,226,.10);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1.5px solid rgba(236,232,226,.35);
+      display: grid; place-items: center;
+      opacity: 0;
+      transition: opacity .3s, transform .3s;
+      transform: scale(.9);
+    }
+    .featured-art-wrap:hover .featured-art-play { opacity: 1; transform: scale(1); }
+    .featured-art-wrap.soon { cursor: default; }
+    .featured-art-wrap.soon .featured-art-play { display: none; }
+    .featured-art-wrap.soon:hover .featured-art-overlay { background: rgba(0,0,0,0); }
+    .featured-art-play .triangle {
+      width: 0; height: 0;
+      border-left: 32px solid rgba(236,232,226,.9);
+      border-top: 22px solid transparent;
+      border-bottom: 22px solid transparent;
+      margin-left: 8px;
+    }
+    .featured-body { display: flex; flex-direction: column; gap: 40px; min-width: 0; }
+    .featured-head { display: flex; flex-direction: column; gap: 8px; }
+    .featured-head .label {
+      font-family: 'Geist Mono', monospace;
+      font-size: 12px; letter-spacing: .2em; text-transform: uppercase;
+      color: var(--accent);
+    }
+    .featured-title {
+      margin: 0;
+      font-family: 'Big Shoulders Display', sans-serif;
+      font-weight: 900;
+      font-size: clamp(72px, 14vw, 200px);
+      line-height: .8;
+      text-transform: uppercase;
+    }
+    .featured-player { display: flex; align-items: center; gap: 24px; }
+    .featured-player .play-btn { width: 72px; height: 72px; }
+    .featured-player .play-btn .triangle {
+      border-left-width: 18px;
+      border-top-width: 11px;
+      border-bottom-width: 11px;
+      margin-left: 5px;
+    }
+    .featured-player .play-btn .pause span { width: 5px; height: 20px; }
+    .waveform-visual {
+      flex: 1; height: 72px;
+      display: flex; align-items: center; gap: 3px;
+      min-width: 0;
+    }
+    .waveform-visual .bar {
+      flex: 1;
+      background: var(--wave-off);
+      border-radius: 1px;
+    }
+    .featured-runtime {
+      flex: none;
+      font-family: 'Geist Mono', monospace;
+      font-size: 13px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .platform-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      column-gap: 40px;
+      font-family: 'Geist Mono', monospace;
+      font-size: 13px; letter-spacing: .14em; text-transform: uppercase;
+    }
+    .platform-row {
+      display: flex; justify-content: space-between;
+      padding: 18px 0;
+      border-top: 1px solid var(--line);
+      color: var(--text);
+    }
+    .platform-row.soon { color: var(--muted); cursor: default; }
+    .platform-row.soon:hover { opacity: 1; }
+    .platform-row .action { color: var(--accent); }
+
+    /* ─── DISCOGRAPHY ─────────────────────────────────── */
+    .discography-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 56px 24px;
+    }
+    .disco-card {
+      display: flex; flex-direction: column; gap: 16px;
+      transition: transform .35s cubic-bezier(.2,.7,.2,1);
+    }
+    .disco-card:hover { transform: scale(1.02); }
+    .disco-art-wrap {
+      position: relative;
+      cursor: pointer;
+      overflow: hidden;
+    }
+    .disco-art-wrap img {
+      width: 100%; aspect-ratio: 1;
+      object-fit: cover; display: block;
+      filter: saturate(.85);
+      transition: filter .35s;
+    }
+    .disco-art-wrap:hover img { filter: saturate(1); }
+    .disco-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to bottom, rgba(0,0,0,0) 40%, rgba(0,0,0,.6) 100%);
+      opacity: 0;
+      transition: opacity .3s;
+    }
+    .disco-art-wrap:hover .disco-overlay { opacity: 1; }
+    .disco-play {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%) scale(.9);
+      width: 72px; height: 72px; border-radius: 50%;
+      background: rgba(236,232,226,.10);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1.5px solid rgba(236,232,226,.35);
+      display: grid; place-items: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .3s, transform .3s, background .2s, border-color .2s;
+      z-index: 3;
+    }
+    .disco-art-wrap:hover .disco-play {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+      pointer-events: auto;
+    }
+    .disco-play:hover {
+      background: rgba(236,232,226,.18);
+      border-color: rgba(236,232,226,.6);
+      transform: translate(-50%, -50%) scale(1.08);
+    }
+    .disco-play .triangle {
+      width: 0; height: 0;
+      border-left: 18px solid rgba(236,232,226,.9);
+      border-top: 12px solid transparent;
+      border-bottom: 12px solid transparent;
+      margin-left: 5px;
+    }
+    .disco-platforms {
+      position: absolute;
+      left: 12px; right: 12px; bottom: 12px;
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity .3s .05s, transform .3s .05s;
+      z-index: 2;
+    }
+    .disco-art-wrap:hover .disco-platforms { opacity: 1; transform: translateY(0); }
+    .disco-plat-icon {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: rgba(10,9,8,.75);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(236,232,226,.25);
+      display: grid; place-items: center;
+      color: var(--text);
+    }
+    .disco-plat-icon:hover {
+      background: var(--accent);
+      color: var(--bg);
+      border-color: var(--accent);
+      opacity: 1;
+    }
+    .disco-plat-icon svg { width: 15px; height: 15px; fill: currentColor; }
+    .disco-card .meta {
+      display: flex; justify-content: space-between;
+      font-family: 'Geist Mono', monospace;
+      font-size: 11px; letter-spacing: .2em; text-transform: uppercase;
+      color: var(--muted);
+    }
+    .disco-card .title {
+      font-family: 'Big Shoulders Display', sans-serif;
+      font-weight: 800;
+      font-size: 34px;
+      line-height: 1;
+      text-transform: uppercase;
+      text-wrap: balance;
+      cursor: pointer;
+    }
+    .disco-card .title:hover { color: var(--accent); }
+
+    /* ─── MIXES ───────────────────────────────────────── */
+    .mix-row {
+      display: grid;
+      grid-template-columns: 120px minmax(0, 1fr) 220px 64px;
+      align-items: center;
+      padding: 28px 0;
+      border-bottom: 1px solid var(--line);
+      color: var(--text);
+      transition: color .25s;
+      cursor: pointer;
+    }
+    .mix-row:hover { color: var(--accent); opacity: 1; }
+    .mix-row .num {
+      font-family: 'Geist Mono', monospace;
+      font-size: 13px; color: var(--muted);
+    }
+    .mix-row:hover .num, .mix-row:hover .genre { color: var(--accent); }
+    .mix-row .title {
+      font-family: 'Big Shoulders Display', sans-serif;
+      font-weight: 900;
+      font-size: clamp(48px, 8vw, 96px);
+      line-height: .9;
+      text-transform: uppercase;
+    }
+    .mix-row .genre {
+      font-family: 'Geist Mono', monospace;
+      font-size: 12px; letter-spacing: .2em; text-transform: uppercase;
+      color: var(--muted);
+    }
+    .mix-row .play-circle {
+      width: 56px; height: 56px; border-radius: 50%;
+      border: 1px solid currentColor;
+      display: grid; place-items: center;
+      justify-self: end;
+    }
+    .mix-row .play-circle .tri {
+      width: 0; height: 0;
+      border-left: 13px solid currentColor;
+      border-top: 8px solid transparent;
+      border-bottom: 8px solid transparent;
+      margin-left: 4px;
+    }
+
+    /* ─── SHOWS ───────────────────────────────────────── */
+    .show-row {
+      display: grid;
+      grid-template-columns: 200px minmax(0,1fr) minmax(0,1fr) auto;
+      align-items: center;
+      gap: 24px;
+      padding: 28px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .show-row .date {
+      font-family: 'Geist Mono', monospace;
+      font-size: 14px; letter-spacing: .16em; text-transform: uppercase;
+    }
+    .show-row .city {
+      font-family: 'Big Shoulders Display', sans-serif;
+      font-weight: 800;
+      font-size: 48px; line-height: 1;
+      text-transform: uppercase;
+    }
+    .show-row .venue { font-size: 16px; color: var(--muted); }
+    .show-row .tickets {
+      padding: 12px 22px;
+      border: 1px solid var(--line-strong);
+      border-radius: 100px;
+      font-family: 'Geist Mono', monospace;
+      font-size: 12px; letter-spacing: .16em; text-transform: uppercase;
+    }
+    .shows-empty {
+      padding: 60px 0;
+      color: var(--muted);
+      font-size: 17px;
+      text-align: center;
+    }
+
+    /* ─── ABOUT ───────────────────────────────────────── */
+    .about-grid {
+      display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+      gap: 80px; align-items: center;
+    }
+    .about-portrait {
+      width: 100%; height: 760px;
+      object-fit: cover; object-position: 55% 45%;
+      display: block;
+    }
+    .about-body { display: flex; flex-direction: column; gap: 32px; }
+    .about-lede {
+      margin: 0;
+      font-size: 44px; line-height: 1.15;
+      font-weight: 300; letter-spacing: -.01em;
+      text-wrap: pretty;
+    }
+    .about-copy {
+      margin: 0;
+      font-size: 17px; line-height: 1.7;
+      color: var(--muted);
+      max-width: 520px;
+      text-wrap: pretty;
+    }
+
+    /* ─── BOOKING / FOLLOW ───────────────────────────── */
+    .booking-follow {
+      display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+      border-bottom: 1px solid var(--line);
+    }
+    .booking {
+      padding: 0 56px 64px 0;
+      border-right: 1px solid var(--line);
+      display: flex; flex-direction: column; gap: 24px;
+    }
+    .follow {
+      padding: 0 0 64px 56px;
+      display: flex; flex-direction: column; gap: 24px;
+    }
+    .contact-hd {
+      font-family: 'Big Shoulders Display', sans-serif;
+      font-weight: 800;
+      font-size: clamp(40px, 6vw, 64px);
+      line-height: 1;
+      text-transform: uppercase;
+    }
+    .contact-sub { font-size: 16px; color: var(--muted); }
+    .follow-circles { display: flex; gap: 14px; flex-wrap: wrap; }
+    .follow-circles a {
+      width: 64px; height: 64px; border-radius: 50%;
+      border: 1px solid var(--line-strong);
+      display: grid; place-items: center;
+      color: var(--text);
+      transition: all .2s;
+    }
+    .follow-circles a:hover {
+      background: var(--text);
+      color: var(--bg);
+      border-color: var(--text);
+      opacity: 1;
+    }
+    .follow-circles .disabled {
+      width: 64px; height: 64px; border-radius: 50%;
+      border: 1px dashed var(--line-strong);
+      display: grid; place-items: center;
+      color: var(--muted);
+      opacity: .4;
+      cursor: not-allowed;
+    }
+    .follow-circles svg { width: 24px; height: 24px; fill: currentColor; }
+
+    /* ─── NEWSLETTER ─────────────────────────────────── */
+    .newsletter {
+      position: relative;
+      padding: 160px 56px;
+      overflow: hidden;
+      display: grid; grid-template-columns: minmax(0,1fr) 560px;
+      gap: 80px; align-items: end;
+      opacity: 0; transform: translateY(12px);
+      transition: opacity .8s ease, transform .8s ease;
+    }
+    .newsletter.is-visible { opacity: 1; transform: translateY(0); }
+    .newsletter .glow {
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 50% 90% at 20% 110%, oklch(0.74 0.14 60 / .2), transparent 70%);
+      pointer-events: none;
+    }
+    .newsletter h2 {
+      position: relative;
+      margin: 0;
+      font-family: 'Big Shoulders Display', sans-serif;
+      font-weight: 900;
+      font-size: clamp(80px, 15vw, 150px);
+      line-height: .82;
+      text-transform: uppercase;
+    }
+    .newsletter-form {
+      position: relative;
+      display: flex; flex-direction: column; gap: 16px;
+    }
+    .newsletter-form .sub { font-size: 16px; color: var(--muted); }
+    .newsletter-input {
+      display: flex; align-items: center;
+      border-bottom: 1px solid var(--text);
+      padding-bottom: 12px;
+      gap: 16px;
+    }
+    .newsletter-input input {
+      flex: 1;
+      font-size: 22px;
+      min-width: 0;
+    }
+    .newsletter-input button {
+      color: var(--accent);
+      font-family: 'Geist Mono', monospace;
+      font-size: 13px; letter-spacing: .16em; text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .newsletter-status {
+      font-family: 'Geist Mono', monospace;
+      font-size: 12px; letter-spacing: .16em; text-transform: uppercase;
+      color: var(--muted);
+      min-height: 1.2em;
+    }
+    .newsletter-status.err { color: #e56b6f; }
+    .newsletter-status.ok  { color: var(--accent); }
+
+    /* ─── FOOTER ─────────────────────────────────────── */
+    footer {
+      padding: 0 var(--pad-x);
+      overflow: hidden;
+    }
+    .footer-row {
+      position: relative;
+      z-index: 2;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 32px 0;
+      border-top: 1px solid var(--line);
+      font-family: 'Geist Mono', monospace;
+      font-size: 12px; letter-spacing: .2em; text-transform: uppercase;
+      color: var(--muted);
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .footer-row .socials { display: flex; gap: 32px; flex-wrap: wrap; }
+    .footer-row .socials a:hover { color: var(--text); opacity: 1; }
+    .footer-wordmark {
+      position: relative;
+      z-index: 1;
+      pointer-events: none;
+      user-select: none;
+      font-family: 'Big Shoulders Display', sans-serif;
+      font-weight: 900;
+      font-size: clamp(160px, 33vw, 470px);
+      line-height: .72;
+      text-transform: uppercase;
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(236,232,226,.25);
+      margin-bottom: -60px;
+      text-align: center;
+      letter-spacing: -.01em;
+    }
+
+    /* ─── FLOATING PLAYER ────────────────────────────── */
+    .fplayer {
+      position: fixed; z-index: 100;
+      left: 50%; bottom: 16px;
+      transform: translateX(-50%) translateY(calc(100% + 40px));
+      width: min(1180px, calc(100vw - 24px));
+      background: rgba(10,9,8,.94);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid var(--line-strong);
+      border-radius: 12px;
+      box-shadow: 0 24px 60px rgba(0,0,0,.55);
+      transition: transform .4s cubic-bezier(.2,.7,.2,1), opacity .3s;
+      opacity: 0;
+      overflow: hidden;
+    }
+    .fplayer.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    .fplayer::before {
+      content: '';
+      position: absolute; top: 0; left: 0;
+      width: 96px; height: 2px;
+      background: var(--accent);
+      opacity: .9;
+    }
+    .fp-inner {
+      display: grid;
+      grid-template-columns: 72px minmax(0, 260px) auto minmax(0, 1fr) auto auto;
+      align-items: center;
+      gap: 20px;
+      padding: 14px 16px 14px 14px;
+    }
+    .fp-thumb {
+      width: 72px; height: 72px;
+      background: #000;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .fp-thumb img {
+      width: 100%; height: 100%;
+      object-fit: cover; display: block;
+    }
+    .fp-info { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+    .fp-chip {
+      align-self: flex-start;
+      display: inline-flex; align-items: center; gap: 6px;
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px; letter-spacing: .2em; text-transform: uppercase;
+      color: var(--accent);
+      padding: 3px 8px;
+      background: rgba(229, 154, 63, .09);
+      border-radius: 3px;
+    }
+    .fp-title {
+      font-family: 'Big Shoulders Display', sans-serif;
+      font-weight: 800;
+      font-size: 30px;
+      line-height: 1;
+      text-transform: uppercase;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .fp-subtitle {
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px; letter-spacing: .18em; text-transform: uppercase;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .fp-transport { display: flex; align-items: center; gap: 12px; }
+    .fp-skip {
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 1px solid var(--line-strong);
+      color: var(--muted);
+      display: grid; place-items: center;
+      transition: color .2s, border-color .2s, background .2s;
+    }
+    .fp-skip:hover:not(:disabled) { color: var(--text); border-color: var(--text); }
+    .fp-skip:disabled { opacity: .35; cursor: not-allowed; }
+    .fp-skip svg { width: 14px; height: 14px; fill: currentColor; }
+    .fp-play-btn {
+      width: 52px; height: 52px; border-radius: 50%;
+      background: var(--accent);
+      display: grid; place-items: center;
+      transition: transform .2s;
+    }
+    .fp-play-btn:hover { transform: scale(1.05); }
+    .fp-play-btn .triangle {
+      width: 0; height: 0;
+      border-left: 15px solid var(--bg);
+      border-top: 10px solid transparent;
+      border-bottom: 10px solid transparent;
+      margin-left: 4px;
+    }
+    .fp-play-btn .pause { display: flex; gap: 5px; }
+    .fp-play-btn .pause span { width: 5px; height: 18px; background: var(--bg); }
+    .fp-play-btn.loading {
+      background: rgba(229, 154, 63, .35);
+      cursor: wait;
+    }
+    .fp-play-btn.loading::after {
+      content: '';
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      border: 2px solid rgba(10,9,8,.3);
+      border-top-color: var(--bg);
+      animation: fp-spin .8s linear infinite;
+    }
+    .fp-play-btn.loading .triangle,
+    .fp-play-btn.loading .pause { display: none; }
+    @keyframes fp-spin { to { transform: rotate(360deg); } }
+
+    .fp-timeline { display: flex; align-items: center; gap: 14px; min-width: 0; }
+    .fp-time {
+      font-family: 'Geist Mono', monospace;
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+      min-width: 34px;
+      text-align: center;
+    }
+    .fp-time.total { text-align: center; }
+    .fp-waveform {
+      flex: 1; height: 48px;
+      display: flex; align-items: center; gap: 2px;
+      cursor: pointer;
+      min-width: 100px;
+    }
+    .fp-waveform .bar {
+      flex: 1;
+      background: var(--wave-off);
+      border-radius: 1px;
+      transition: background .15s;
+    }
+    .fp-waveform .bar.played { background: var(--accent); }
+
+    .fp-platform {
+      width: 44px; height: 44px; border-radius: 50%;
+      border: 1px solid var(--line-strong);
+      color: var(--text);
+      display: grid; place-items: center;
+      transition: all .2s;
+    }
+    .fp-platform:hover {
+      background: var(--text);
+      color: var(--bg);
+      border-color: var(--text);
+      opacity: 1;
+    }
+    .fp-platform svg { width: 18px; height: 18px; fill: currentColor; }
+
+    .fp-close {
+      width: 32px; height: 32px; border-radius: 50%;
+      color: var(--muted);
+      display: grid; place-items: center;
+      transition: all .2s;
+    }
+    .fp-close:hover { color: var(--text); background: rgba(236,232,226,.08); }
+    .fp-close svg { width: 14px; height: 14px; fill: currentColor; }
+
+    /* Hidden SC widget iframe (created lazily) */
+    #sc-widget-host { position: fixed; left: -9999px; top: 0; width: 1px; height: 1px; visibility: hidden; }
+
+    /* ─── RESPONSIVE ─────────────────────────────────── */
+    @media (max-width: 1200px) {
+      :root { --pad-x: 40px; }
+      .featured { grid-template-columns: 480px minmax(0,1fr); gap: 56px; }
+      .featured-art { width: 480px; height: 480px; }
+      .discography-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .mix-row { grid-template-columns: 80px minmax(0,1fr) 160px 56px; }
+      .show-row { grid-template-columns: 140px minmax(0,1fr) minmax(0,1fr) auto; }
+      .fp-inner { grid-template-columns: 64px minmax(0, 220px) auto minmax(0, 1fr) auto auto; gap: 16px; padding: 12px; }
+      .fp-thumb { width: 64px; height: 64px; }
+      .fp-title { font-size: 26px; }
+    }
+
+    @media (max-width: 900px) {
+      :root { --pad-x: 32px; }
+      section.page { padding-top: 120px; }
+      section.page.first { padding-top: 100px; }
+
+      .nav-links { display: none; }
+      nav { grid-template-columns: 1fr auto; padding: 24px var(--pad-x); }
+      nav.scrolled { padding: 16px var(--pad-x); }
+
+      .hero { height: 820px; }
+      .hero-portrait { width: 70%; }
+      .hero-bottom { left: 24px; right: 24px; bottom: 24px; flex-direction: column; align-items: flex-start; }
+      .hero-pill { margin-bottom: 0; align-self: stretch; justify-content: space-between; }
+
+      .featured { grid-template-columns: minmax(0,1fr); gap: 40px; align-items: start; }
+      .featured-art { width: 100%; height: auto; aspect-ratio: 1; }
+      .featured-art-wrap { max-width: 480px; margin: 0 auto; }
+      .featured-art-play { width: 100px; height: 100px; }
+      .featured-art-play .triangle { border-left-width: 26px; border-top-width: 18px; border-bottom-width: 18px; }
+
+      .discography-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px 20px; }
+
+      .mix-row { grid-template-columns: 60px minmax(0,1fr) 56px; }
+      .mix-row .genre { display: none; }
+
+      .show-row { grid-template-columns: 100px minmax(0,1fr); grid-template-rows: auto auto; gap: 4px 16px; }
+      .show-row .date { grid-column: 1; grid-row: 1 / 3; align-self: start; padding-top: 8px; }
+      .show-row .city { grid-column: 2; grid-row: 1; }
+      .show-row .venue { grid-column: 2; grid-row: 2; }
+      .show-row .tickets { grid-column: 1 / 3; grid-row: 3; justify-self: start; margin-top: 12px; }
+
+      .about-grid { grid-template-columns: minmax(0,1fr); gap: 32px; }
+      .about-portrait { height: 480px; }
+
+      .booking-follow { grid-template-columns: minmax(0,1fr); }
+      .booking { padding: 0 0 48px 0; border-right: none; border-bottom: 1px solid var(--line); }
+      .follow { padding: 48px 0 48px 0; }
+
+      .newsletter { grid-template-columns: minmax(0,1fr); gap: 32px; padding: 100px var(--pad-x); align-items: start; }
+
+      .platform-grid { grid-template-columns: 1fr; column-gap: 0; }
+      .featured-player { flex-wrap: wrap; }
+      .waveform-visual { min-width: 200px; }
+      .featured-runtime { order: 3; }
+
+      /* Player collapses to a two-row layout on tablet */
+      .fp-inner {
+        grid-template-columns: 56px minmax(0, 1fr) auto auto;
+        grid-template-areas:
+          "thumb info platform close"
+          "transport transport transport transport"
+          "timeline timeline timeline timeline";
+        gap: 10px 14px;
+        padding: 12px;
+      }
+      .fp-thumb { grid-area: thumb; width: 56px; height: 56px; }
+      .fp-info { grid-area: info; }
+      .fp-transport { grid-area: transport; justify-content: center; padding-top: 4px; }
+      .fp-timeline { grid-area: timeline; }
+      .fp-platform { grid-area: platform; width: 40px; height: 40px; }
+      .fp-close { grid-area: close; }
+      .fp-title { font-size: 22px; }
+    }
+
+    @media (max-width: 560px) {
+      :root { --pad-x: 20px; }
+      .hero { height: 740px; }
+      .hero-portrait { width: 100%; opacity: .55; }
+      .hero-pill { padding: 10px 10px 10px 16px; gap: 12px; }
+      .hero-pill .play-btn { width: 40px; height: 40px; }
+
+      .about-lede { font-size: 30px; }
+      .disco-card .title { font-size: 26px; }
+      .show-row .city { font-size: 32px; }
+      .contact-hd { font-size: 40px; }
+      .featured-player .play-btn { width: 60px; height: 60px; }
+      .footer-row { flex-direction: column; align-items: flex-start; }
+
+      .fplayer { width: calc(100vw - 16px); bottom: 8px; }
+      .fp-inner { gap: 8px 12px; padding: 10px; }
+      .fp-title { font-size: 20px; }
+      .fp-play-btn { width: 46px; height: 46px; }
+      .fp-play-btn .triangle { border-left-width: 13px; border-top-width: 8px; border-bottom-width: 8px; }
+      .fp-skip { width: 32px; height: 32px; }
+      .fp-time { font-size: 11px; }
+      .fp-waveform { height: 40px; }
+      .fp-platform { width: 36px; height: 36px; }
+      .disco-plat-icon { width: 30px; height: 30px; }
+      .disco-plat-icon svg { width: 13px; height: 13px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── NAV ───────────────────────────────────────────── -->
+  <nav id="nav">
+    <a href="#top" class="nav-brand">Xander</a>
+    <div class="nav-links">
+      <a href="#music">Music</a>
+      <a href="#mixes">Mixes</a>
+      <a href="#shows">Shows</a>
+      <a href="#about">About</a>
+      <a href="#booking">Booking</a>
+    </div>
+    <div class="nav-cta"><a href="#music">Listen ↗</a></div>
+  </nav>
+
+  <!-- ── HERO ──────────────────────────────────────────── -->
+  <section class="hero" id="top">
+    <div class="hero-glow"></div>
+    <img src="/avatar.png" alt="Xander" class="hero-portrait">
+    <div class="hero-fade"></div>
+    <div class="hero-bottom">
+      <h1 class="hero-wordmark">Xander</h1>
+      <div class="hero-pill">
+        <div class="lines">
+          <span class="top">New single</span>
+          <span>Inrush, coming soon</span>
+        </div>
+        <button class="play-btn" disabled aria-label="Inrush coming soon" title="Coming soon">
+          <span class="triangle"></span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <main>
+
+    <!-- ── 01 LATEST RELEASE ──────────────────────────── -->
+    <section class="page first" id="music">
+      <div class="section-header">
+        <span>01</span>
+        <span class="name">Latest release</span>
+        <div class="rule"></div>
+      </div>
+
+      <div class="featured">
+        <div class="featured-art-wrap soon">
+          <div class="featured-art-glow"></div>
+          <img src="https://i1.sndcdn.com/artworks-qeGodj3EHPXsmMFU-Uq1m0Q-t500x500.jpg" alt="Inrush" class="featured-art">
+          <div class="featured-art-overlay">
+            <div class="featured-art-play"><span class="triangle"></span></div>
+          </div>
+        </div>
+
+        <div class="featured-body">
+          <div class="featured-head">
+            <span class="label">● Coming soon · Single</span>
+            <h2 class="featured-title">Inrush</h2>
+          </div>
+
+          <div class="featured-player">
+            <button class="play-btn" disabled aria-label="Inrush coming soon" title="Coming soon">
+              <span class="triangle"></span>
+            </button>
+            <div class="waveform-visual" id="featured-waveform"></div>
+            <span class="featured-runtime">6:24</span>
+          </div>
+
+          <div class="platform-grid">
+            <div class="platform-row soon"><span>SoundCloud</span><span>Soon</span></div>
+            <div class="platform-row soon"><span>Spotify</span><span>Soon</span></div>
+            <div class="platform-row soon"><span>Apple Music</span><span>Soon</span></div>
+            <div class="platform-row soon"><span>Amazon Music</span><span>Soon</span></div>
+            <div class="platform-row soon"><span>YouTube</span><span>Soon</span></div>
+            <div class="platform-row soon"><span>Tidal</span><span>Soon</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 02 DISCOGRAPHY ─────────────────────────────── -->
+    <section class="page" id="discography">
+      <div class="section-header">
+        <span>02</span>
+        <span class="name">Discography</span>
+        <div class="rule"></div>
+        <span class="extra">8 releases</span>
+      </div>
+
+      <div class="discography-grid" id="discography-grid"></div>
+    </section>
+
+    <!-- ── 03 DJ MIXES ────────────────────────────────── -->
+    <section class="page" id="mixes">
+      <div class="section-header tight">
+        <span>03</span>
+        <span class="name">DJ Mixes</span>
+        <div class="rule"></div>
+      </div>
+      <div id="mixes-list"></div>
+    </section>
+
+    <!-- ── 04 SHOWS ───────────────────────────────────── -->
+    <section class="page" id="shows">
+      <div class="section-header tight">
+        <span>04</span>
+        <span class="name">Shows</span>
+        <div class="rule"></div>
+        <span class="extra chip">Sample dates</span>
+      </div>
+      <div id="shows-list"></div>
+    </section>
+
+    <!-- ── 05 ABOUT ───────────────────────────────────── -->
+    <section class="page" id="about">
+      <div class="about-grid">
+        <img src="/avatar.jpg" alt="Xander" class="about-portrait">
+        <div class="about-body">
+          <div class="section-header" style="margin-bottom:0">
+            <span>05</span>
+            <span class="name">About</span>
+          </div>
+          <p class="about-lede">Melodic techno for the hour after midnight: slow-burning, cinematic, and built on atmosphere.</p>
+          <p class="about-copy">Placeholder bio. Two or three sentences on where Xander comes from, the labels or rooms that shaped the sound, and what's coming next. Keep it short. The music should do the talking.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 06 BOOKING · 07 FOLLOW ─────────────────────── -->
+    <section class="page" id="booking">
+      <div class="booking-follow">
+        <div class="booking">
+          <span class="mono" style="color:var(--muted)">06 · Booking</span>
+          <a href="mailto:hello@xandersound.com" class="contact-hd">hello@xandersound.com</a>
+          <span class="contact-sub">For club, festival and label enquiries.</span>
+        </div>
+        <div class="follow">
+          <span class="mono" style="color:var(--muted)">07 · Follow</span>
+          <span class="contact-hd">Stay connected</span>
+          <div class="follow-circles" id="follow-circles"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── NEWSLETTER ─────────────────────────────────── -->
+    <section class="newsletter" id="newsletter">
+      <div class="glow"></div>
+      <h2>Hear it<br>first</h2>
+      <div class="newsletter-form">
+        <span class="sub">New releases, mixes and show dates. No spam.</span>
+        <form class="newsletter-input" id="nl-form">
+          <input type="email" name="email" required placeholder="your@email.com" autocomplete="email">
+          <button type="submit">Subscribe →</button>
+        </form>
+        <span class="newsletter-status" id="nl-status"></span>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ── FOOTER ────────────────────────────────────────── -->
+  <footer>
+    <div class="footer-row">
+      <div class="socials" id="footer-socials"></div>
+      <span>© 2026 Xander Sound</span>
+    </div>
+    <div class="footer-wordmark">Xander</div>
+  </footer>
+
+  <!-- ── FLOATING PLAYER ───────────────────────────────── -->
+  <div class="fplayer" id="fplayer" role="region" aria-label="Audio player">
+    <div class="fp-inner">
+      <div class="fp-thumb"><img id="fp-thumb-img" alt=""></div>
+
+      <div class="fp-info">
+        <span class="fp-chip" id="fp-chip">Paused · 01 / 12</span>
+        <div class="fp-title" id="fp-title">—</div>
+        <div class="fp-subtitle" id="fp-subtitle">Xander</div>
+      </div>
+
+      <div class="fp-transport">
+        <button class="fp-skip" id="fp-prev" aria-label="Previous">
+          <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6 8.5-6v12z"/></svg>
+        </button>
+        <button class="fp-play-btn" id="fp-play" aria-label="Play/pause">
+          <span class="triangle"></span>
+        </button>
+        <button class="fp-skip" id="fp-next" aria-label="Next">
+          <svg viewBox="0 0 24 24"><path d="M16 6h2v12h-2zM6 18l8.5-6L6 6z"/></svg>
+        </button>
+      </div>
+
+      <div class="fp-timeline">
+        <span class="fp-time" id="fp-time-now">0:00</span>
+        <div class="fp-waveform" id="fp-waveform"></div>
+        <span class="fp-time total" id="fp-time-total">0:00</span>
+      </div>
+
+      <a class="fp-platform" id="fp-platform" href="#" target="_blank" rel="noopener" aria-label="Open on SoundCloud">
+        <svg viewBox="0 0 24 24"><path d="M11.56 8.87V17h8.76c1.45-.14 2.48-1.41 2.48-2.9 0-1.63-1.27-2.93-2.84-2.93-.3 0-.59.05-.86.13-.3-2.07-2.06-3.64-4.16-3.64-1.34 0-2.53.59-3.38 1.51zM0 17l1.12.03c.87 0 1.58-.73 1.58-1.62V10.8c0-.89-.7-1.62-1.58-1.62L0 9.21V17zm3.44.03c.87 0 1.58-.73 1.58-1.62V9.4c0-.89-.7-1.62-1.58-1.62-.87 0-1.58.73-1.58 1.62v6.01c0 .89.7 1.62 1.58 1.62zm3.13 0c.87 0 1.58-.73 1.58-1.62V7.44c0-.89-.7-1.62-1.58-1.62-.87 0-1.58.73-1.58 1.62v7.97c0 .89.7 1.62 1.58 1.62zm3.14 0c.87 0 1.58-.73 1.58-1.62V8.73c0-.89-.7-1.62-1.58-1.62-.87 0-1.58.73-1.58 1.62v6.68c0 .89.7 1.62 1.58 1.62z"/></svg>
+      </a>
+
+      <button class="fp-close" id="fp-close" aria-label="Close player">
+        <svg viewBox="0 0 24 24"><path d="M19 6.4 17.6 5 12 10.6 6.4 5 5 6.4 10.6 12 5 17.6 6.4 19 12 13.4 17.6 19 19 17.6 13.4 12z"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Host for the hidden SoundCloud widget iframe (created lazily) -->
+  <div id="sc-widget-host"></div>
+
+  <script src="https://w.soundcloud.com/player/api.js"></script>
+  <script>
+  (function () {
+    'use strict';
+
+    /* ─── Icons (SVG paths) ────────────────────────────── */
+    const I = {
+      spotify:    "M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424c-.18.295-.563.387-.857.207-2.35-1.434-5.305-1.76-8.786-.963-.335.077-.67-.133-.746-.47-.077-.334.132-.67.47-.745 3.808-.87 7.076-.496 9.712 1.115.293.18.386.563.207.856zm1.223-2.723c-.226.367-.706.482-1.072.257-2.687-1.652-6.785-2.131-9.965-1.166-.413.127-.848-.105-.975-.517-.126-.413.106-.849.518-.975 3.632-1.102 8.147-.568 11.237 1.328.366.226.48.707.257 1.073zm.105-2.835C14.692 8.95 9.375 8.775 6.297 9.71c-.493.15-1.016-.129-1.166-.623-.148-.495.13-1.016.624-1.166 3.532-1.073 9.404-.866 13.115 1.337.445.264.59.838.327 1.282-.264.443-.838.59-1.283.326z",
+      apple:      "M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z",
+      amazon:     "M2 9.5h2v5H2v-5zm4-3h2v11H6v-11zm4 1.5h2v8h-2V8zm4-2h2v12h-2V6zm4 3.5h2v5h-2v-5zm4-2h2v9h-2v-9z",
+      youtube:    "M12 0C5.376 0 0 5.376 0 12s5.376 12 12 12 12-5.376 12-12S18.624 0 12 0zm0 19.104c-3.924 0-7.104-3.18-7.104-7.104S8.076 4.896 12 4.896s7.104 3.18 7.104 7.104-3.18 7.104-7.104 7.104zm0-13.332c-3.432 0-6.228 2.796-6.228 6.228 0 3.432 2.796 6.228 6.228 6.228 3.432 0 6.228-2.796 6.228-6.228 0-3.432-2.796-6.228-6.228-6.228zM9.768 15.54V8.46L15.84 12l-6.072 3.54z",
+      tidal:      "M5 8l3-3 3 3-3 3-3-3zm8 0l3-3 3 3-3 3-3-3zm-4 8l3-3 3 3-3 3-3-3z",
+      soundcloud: "M11.56 8.87V17h8.76c1.45-.14 2.48-1.41 2.48-2.9 0-1.63-1.27-2.93-2.84-2.93-.3 0-.59.05-.86.13-.3-2.07-2.06-3.64-4.16-3.64-1.34 0-2.53.59-3.38 1.51zM0 17l1.12.03c.87 0 1.58-.73 1.58-1.62V10.8c0-.89-.7-1.62-1.58-1.62L0 9.21V17zm3.44.03c.87 0 1.58-.73 1.58-1.62V9.4c0-.89-.7-1.62-1.58-1.62-.87 0-1.58.73-1.58 1.62v6.01c0 .89.7 1.62 1.58 1.62zm3.13 0c.87 0 1.58-.73 1.58-1.62V7.44c0-.89-.7-1.62-1.58-1.62-.87 0-1.58.73-1.58 1.62v7.97c0 .89.7 1.62 1.58 1.62zm3.14 0c.87 0 1.58-.73 1.58-1.62V8.73c0-.89-.7-1.62-1.58-1.62-.87 0-1.58.73-1.58 1.62v6.68c0 .89.7 1.62 1.58 1.62z",
+      instagram:  "M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z",
+      email:      "M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"
+    };
+
+    const SC_BASE = 'https://soundcloud.com/xxxxander/';
+
+    /* ─── Track data ───────────────────────────────────── */
+    const INRUSH = {
+      key: 'inrush',
+      title: 'Inrush', type: 'Single',
+      art: 'https://i1.sndcdn.com/artworks-qeGodj3EHPXsmMFU-Uq1m0Q-t500x500.jpg',
+      soundcloud: SC_BASE + 'inrush'
+    };
+
+    const DISCO = [
+      { title: 'The Void', type: 'Single', art: 'https://i1.sndcdn.com/artworks-pmFIktToRXMmL7TG-PZgiYA-t500x500.jpg',
+        soundcloud: SC_BASE + 'the-void',
+        spotify: 'https://open.spotify.com/track/5sGAnsbsRGzYl8mSWSFWZL',
+        apple:   'https://music.apple.com/us/album/the-void-single/6798498273',
+        youtube: 'https://music.youtube.com/watch?v=KgG02ABeeQ0' },
+      { title: 'I Gotta Know', type: 'Single', art: 'https://i1.sndcdn.com/artworks-y3HpXGVeppYp8UAL-SXTQYA-t500x500.png',
+        soundcloud: SC_BASE + 'i-gotta-know',
+        spotify: 'https://open.spotify.com/album/2JhAbDUnzmUpC8dEuy2tWL',
+        apple:   'https://music.apple.com/us/song/i-gotta-know/6766573841',
+        amazon:  'https://music.amazon.com/albums/B0GZKZZQHH',
+        youtube: 'https://music.youtube.com/watch?v=iXeOPZi5KWI',
+        tidal:   'https://tidal.com/track/521741056/u' },
+      { title: 'Apologize (Xander Edit)', type: 'Remix', art: 'https://i1.sndcdn.com/artworks-YA4LvzvFBZXWybsr-fQBUrA-t500x500.jpg',
+        soundcloud: SC_BASE + 'one-republic-apologize-xander' },
+      { title: 'Disperse', type: 'Single', art: 'https://i1.sndcdn.com/artworks-P7ef5Jm6GHI984y8-2Fiu3w-t500x500.png',
+        soundcloud: SC_BASE + 'disperse',
+        spotify: 'https://open.spotify.com/track/4JqydjAGPCky31OPqiIkTB',
+        apple:   'https://music.apple.com/us/song/disperse/6766658257',
+        amazon:  'https://music.amazon.com/albums/B0GZLDWKV3',
+        youtube: 'https://music.youtube.com/watch?v=766BWm7D6Bo',
+        tidal:   'https://tidal.com/track/521811710/u' },
+      { title: 'untitled_006.wav', type: 'Single', art: 'https://i1.sndcdn.com/artworks-RrAHv9ez0GUiWWt5-8ATvuQ-t500x500.png', soundcloud: SC_BASE + 'untitled_006wav' },
+      { title: 'untitled_005.wav', type: 'Single', art: 'https://i1.sndcdn.com/artworks-jFx6doM4xCypm9dT-Ie5xQg-t500x500.png', soundcloud: SC_BASE + 'untitled_005wav' },
+      { title: 'untitled_003.wav', type: 'Single', art: 'https://i1.sndcdn.com/artworks-slyIz6ikqWsppqGs-ShcxVQ-t500x500.png', soundcloud: SC_BASE + 'untitled_003wav' },
+      { title: 'untitled_001.wav', type: 'Single', art: 'https://i1.sndcdn.com/artworks-ZbES8wiRdOpuloaT-wSUfUA-t500x500.jpg', soundcloud: SC_BASE + 'untitled_001' }
+    ];
+    DISCO.forEach((t, i) => t.key = 'disco-' + i);
+
+    const MIXES = [
+      { title: 'Melodic Techno Mix 1', type: 'Mix', genre: 'Melodic Techno', soundcloud: SC_BASE + 'melodic-techno-house-mix-1' },
+      { title: 'Tech House Mix 1',      type: 'Mix', genre: 'Tech House',     soundcloud: SC_BASE + 'tech-house-mix-1' },
+      { title: 'Melodic Techno Mix 2', type: 'Mix', genre: 'Melodic Techno', soundcloud: SC_BASE + 'melodic-techno-mix-2' }
+    ];
+    // Give mixes a generic art (the site avatar) since SC will render the mix waveform inside; the art in the player is decorative.
+    MIXES.forEach((m, i) => { m.key = 'mix-' + i; m.art = '/avatar.jpg'; });
+
+    // Unified playlist used by the floating player for skip nav. Order matches on-page order (top to bottom).
+    // Inrush is unreleased — keep it out of the player until it drops.
+    const PLAYLIST = [...DISCO, ...MIXES];
+    const KEY_TO_IDX = {};
+    PLAYLIST.forEach((t, i) => KEY_TO_IDX[t.key] = i);
+
+    const SHOWS = [
+      { date: 'NOV 14', city: 'Los Angeles',   venue: 'Venue TBA' },
+      { date: 'NOV 29', city: 'San Francisco', venue: 'Venue TBA' },
+      { date: 'DEC 06', city: 'Denver',        venue: 'Venue TBA' },
+      { date: 'DEC 31', city: 'New York',      venue: 'Venue TBA' }
+    ];
+
+    const FOLLOW = [
+      { label: 'Instagram',   d: I.instagram,  href: 'https://www.instagram.com/theejoshuajohnson/' },
+      { label: 'YouTube',     d: I.youtube,    disabled: true, title: 'Coming soon' },
+      { label: 'Apple Music', d: I.apple,      href: 'https://music.apple.com/us/artist/xander/1895644509' },
+      { label: 'Spotify',     d: I.spotify,    href: 'https://open.spotify.com/artist/3gIASN9CtTwHJppxrFUf0L' },
+      { label: 'SoundCloud',  d: I.soundcloud, href: SC_BASE }
+    ];
+
+    const SOCIALS = [
+      { label: 'SoundCloud',  href: SC_BASE },
+      { label: 'Spotify',     href: 'https://open.spotify.com/artist/3gIASN9CtTwHJppxrFUf0L' },
+      { label: 'Apple Music', href: 'https://music.apple.com/us/artist/xander/1895644509' },
+      { label: 'Instagram',   href: 'https://www.instagram.com/theejoshuajohnson/' },
+      { label: 'Email',       href: 'mailto:hello@xandersound.com' }
+    ];
+
+    const PLATFORM_ORDER = ['spotify', 'apple', 'amazon', 'youtube', 'tidal', 'soundcloud'];
+    const PLATFORM_NAMES = { spotify: 'Spotify', apple: 'Apple Music', amazon: 'Amazon Music', youtube: 'YouTube', tidal: 'Tidal', soundcloud: 'SoundCloud' };
+
+    /* ─── DOM helpers ──────────────────────────────────── */
+    const $ = (id) => document.getElementById(id);
+    const el = (tag, cls, html) => { const n = document.createElement(tag); if (cls) n.className = cls; if (html != null) n.innerHTML = html; return n; };
+    const svgIcon = (key) => `<svg viewBox="0 0 24 24"><path d="${I[key]}"/></svg>`;
+    const pad2 = (n) => String(n).padStart(2, '0');
+
+    /* ─── Deterministic per-track waveform bar heights ─── */
+    function hash(s) { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return Math.abs(h); }
+    function makeWave(seed, n) {
+      const bars = [];
+      const s = (seed % 1000) * 0.01;
+      for (let i = 0; i < n; i++) {
+        const v = 30 + 50 * Math.abs(Math.sin(i * 0.43 + s) * Math.cos(i * 0.13 - s * 0.2)) + 18 * Math.sin(i * 1.7 + s);
+        bars.push(Math.max(15, Math.min(100, Math.round(v))));
+      }
+      return bars;
+    }
+    const N_FP_BARS = 72;
+
+    /* ─── Featured decorative waveform ─────────────────── */
+    const featuredWaveEl = $('featured-waveform');
+    makeWave(hash('inrush'), 96).forEach((h) => {
+      const b = el('div', 'bar');
+      b.style.height = h + '%';
+      featuredWaveEl.appendChild(b);
+    });
+
+    /* ─── Render discography ───────────────────────────── */
+    const grid = $('discography-grid');
+    DISCO.forEach((t, i) => {
+      const card = el('div', 'disco-card');
+      const platsHtml = PLATFORM_ORDER
+        .filter(k => t[k])
+        .map(k =>
+          `<a class="disco-plat-icon" href="${t[k]}" target="_blank" rel="noopener" title="${PLATFORM_NAMES[k]}" aria-label="${PLATFORM_NAMES[k]}">${svgIcon(k)}</a>`
+        )
+        .join('');
+      card.innerHTML = `
+        <div class="disco-art-wrap" data-play-key="${t.key}">
+          <img src="${t.art}" alt="${t.title}">
+          <div class="disco-overlay"></div>
+          <div class="disco-play"><span class="triangle"></span></div>
+          <div class="disco-platforms">${platsHtml}</div>
+        </div>
+        <div class="meta"><span>${pad2(i + 1)}</span><span>${t.type}</span></div>
+        <div class="title" data-play-key="${t.key}">${t.title}</div>
+      `;
+      card.querySelectorAll('[data-play-key]').forEach((trigger) => {
+        trigger.addEventListener('click', (e) => {
+          if (e.target.closest('.disco-plat-icon')) return;
+          e.preventDefault();
+          openPlayer(t.key);
+        });
+      });
+      card.querySelectorAll('.disco-plat-icon').forEach((icon) => {
+        icon.addEventListener('click', (e) => e.stopPropagation());
+      });
+      grid.appendChild(card);
+    });
+
+    /* ─── Render mixes ─────────────────────────────────── */
+    const mixList = $('mixes-list');
+    MIXES.forEach((m, i) => {
+      const row = el('div', 'mix-row');
+      row.setAttribute('data-play-key', m.key);
+      row.innerHTML = `
+        <span class="num">${pad2(i + 1)}</span>
+        <span class="title">${m.title}</span>
+        <span class="genre">${m.genre}</span>
+        <span class="play-circle"><span class="tri"></span></span>
+      `;
+      row.addEventListener('click', () => openPlayer(m.key));
+      mixList.appendChild(row);
+    });
+
+    /* ─── Shows ────────────────────────────────────────── */
+    const showsList = $('shows-list');
+    if (SHOWS.length === 0) {
+      showsList.innerHTML = '<div class="shows-empty">No dates announced. Follow for updates.</div>';
+    } else {
+      SHOWS.forEach((s) => {
+        const row = el('div', 'show-row');
+        row.innerHTML = `
+          <span class="date">${s.date}</span>
+          <span class="city">${s.city}</span>
+          <span class="venue">${s.venue}</span>
+          <a href="#" class="tickets" aria-disabled="true">Tickets ↗</a>
+        `;
+        showsList.appendChild(row);
+      });
+    }
+
+    /* ─── Follow circles ───────────────────────────────── */
+    const followEl = $('follow-circles');
+    FOLLOW.forEach((f) => {
+      let node;
+      if (f.disabled) {
+        node = el('span', 'disabled');
+        node.title = f.title || 'Coming soon';
+        node.setAttribute('aria-disabled', 'true');
+      } else {
+        node = el('a');
+        node.href = f.href; node.target = '_blank'; node.rel = 'noopener';
+        node.title = f.label;
+      }
+      node.setAttribute('aria-label', f.label);
+      node.innerHTML = `<svg viewBox="0 0 24 24"><path d="${f.d}"></path></svg>`;
+      followEl.appendChild(node);
+    });
+
+    /* ─── Footer socials ───────────────────────────────── */
+    const socialsEl = $('footer-socials');
+    SOCIALS.forEach((s) => {
+      const a = el('a');
+      a.href = s.href;
+      if (!s.href.startsWith('mailto:')) { a.target = '_blank'; a.rel = 'noopener'; }
+      a.textContent = s.label;
+      socialsEl.appendChild(a);
+    });
+
+    /* ─── Nav scroll + fade-in ─────────────────────────── */
+    const nav = $('nav');
+    /* ─── Hero parallax ───────────────────────────────── */
+    const heroPortrait = document.querySelector('.hero-portrait');
+    const heroWordmark = document.querySelector('.hero-wordmark');
+    const heroGlow = document.querySelector('.hero-glow');
+    // Once the intro animations finish, clear them so inline transforms (parallax) take effect.
+    [heroPortrait, heroWordmark].forEach((el) => {
+      if (!el) return;
+      el.addEventListener('animationend', () => {
+        el.style.animation = 'none';
+        el.style.opacity = '1';
+        el.style.transform = 'translate3d(0,0,0)';
+      }, { once: true });
+    });
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let heroTicking = false;
+    function updateHeroParallax() {
+      const y = window.scrollY;
+      // Only apply while hero is roughly in view
+      if (y > 1000) { heroTicking = false; return; }
+      const p = Math.min(y, 900);
+      if (heroPortrait) heroPortrait.style.transform = `translate3d(${p * 0.054}px, ${p * -0.034}px, 0)`;
+      if (heroWordmark) heroWordmark.style.transform = `translate3d(${p * -0.04}px, ${p * 0.08}px, 0)`;
+      if (heroGlow) heroGlow.style.transform = `translate3d(0, ${p * 0.10}px, 0)`;
+      heroTicking = false;
+    }
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('scrolled', window.scrollY > 60);
+      if (!prefersReduced && !heroTicking) {
+        heroTicking = true;
+        requestAnimationFrame(updateHeroParallax);
+      }
+    }, { passive: true });
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { rootMargin: '0px 0px -10% 0px', threshold: 0.05 });
+    document.querySelectorAll('.page, .newsletter').forEach((sec) => io.observe(sec));
+
+    /* ─── Newsletter (client stub) ─────────────────────── */
+    const nlForm = $('nl-form');
+    const nlStatus = $('nl-status');
+    nlForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = nlForm.email.value.trim();
+      if (!/.+@.+\..+/.test(email)) {
+        nlStatus.textContent = 'Enter a valid email.';
+        nlStatus.className = 'newsletter-status err';
+        return;
+      }
+      nlStatus.textContent = 'Thanks — check your inbox.';
+      nlStatus.className = 'newsletter-status ok';
+      nlForm.reset();
+    });
+
+    /* ─── FLOATING PLAYER ──────────────────────────────── */
+    const fplayer     = $('fplayer');
+    const fpThumbImg  = $('fp-thumb-img');
+    const fpChip      = $('fp-chip');
+    const fpTitle     = $('fp-title');
+    const fpSubtitle  = $('fp-subtitle');
+    const fpPlayBtn   = $('fp-play');
+    const fpPrevBtn   = $('fp-prev');
+    const fpNextBtn   = $('fp-next');
+    const fpTimeNow   = $('fp-time-now');
+    const fpTimeTotal = $('fp-time-total');
+    const fpWaveform  = $('fp-waveform');
+    const fpPlatform  = $('fp-platform');
+    const fpCloseBtn  = $('fp-close');
+    const scHost      = $('sc-widget-host');
+
+    // Create the bars once; we'll toggle .played per track.
+    const fpBars = [];
+    for (let i = 0; i < N_FP_BARS; i++) {
+      const b = el('div', 'bar');
+      fpWaveform.appendChild(b);
+      fpBars.push(b);
+    }
+
+    let widget      = null;   // SC.Widget instance
+    let widgetReady = false;
+    let readyQueue  = [];     // functions to run once widget is ready
+    let currentIdx  = -1;
+    let playing     = false;
+    let position    = 0;      // ms
+    let duration    = 0;      // ms
+    let seeking     = false;
+    let loading     = false;
+
+    const fmt = (ms) => {
+      const s = Math.max(0, Math.floor(ms / 1000));
+      return `${Math.floor(s / 60)}:${pad2(s % 60)}`;
+    };
+
+    function updateChip() {
+      const state = loading ? 'Loading' : (playing ? 'Playing' : 'Paused');
+      fpChip.textContent = `${state} · ${pad2(currentIdx + 1)} / ${pad2(PLAYLIST.length)}`;
+    }
+
+    function updateTransport() {
+      fpPlayBtn.classList.toggle('loading', loading);
+      fpPlayBtn.innerHTML = loading
+        ? ''
+        : (playing ? '<span class="pause"><span></span><span></span></span>' : '<span class="triangle"></span>');
+    }
+
+    function updateWaveform() {
+      const p = duration > 0 ? position / duration : 0;
+      for (let i = 0; i < fpBars.length; i++) {
+        fpBars[i].classList.toggle('played', i / fpBars.length < p);
+      }
+      fpTimeNow.textContent = fmt(position);
+      fpTimeTotal.textContent = duration > 0 ? fmt(duration) : '0:00';
+    }
+
+    function updateBodyPad() {
+      // Actual rendered height (with 2-row layout on tablet/mobile) so content isn't hidden.
+      const h = fplayer.offsetHeight + 24;
+      document.documentElement.style.setProperty('--fplayer-h', h + 'px');
+    }
+
+    function setBarsForTrack(track) {
+      const heights = makeWave(hash(track.title), N_FP_BARS);
+      for (let i = 0; i < fpBars.length; i++) {
+        fpBars[i].style.height = heights[i] + '%';
+        fpBars[i].classList.remove('played');
+      }
+    }
+
+    function primaryPlatform(t) {
+      // Prefer Spotify > Apple > Amazon > YouTube > Tidal, otherwise SoundCloud.
+      for (const p of ['spotify', 'apple', 'amazon', 'youtube', 'tidal']) if (t[p]) return p;
+      return 'soundcloud';
+    }
+
+    function ensureWidget(track, cb) {
+      if (widget) { cb(); return; }
+      // Lazy-create the iframe on first play. Load without autoplay first;
+      // the loadTrack call will follow with autoplay via widget.load().
+      const iframe = document.createElement('iframe');
+      iframe.id = 'sc-widget';
+      iframe.width = '100%'; iframe.height = '166';
+      iframe.frameBorder = '0';
+      iframe.allow = 'autoplay';
+      iframe.src = 'https://w.soundcloud.com/player/?url=' + encodeURIComponent(track.soundcloud) +
+                   '&auto_play=false&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false&visual=false';
+      scHost.appendChild(iframe);
+
+      widget = SC.Widget(iframe);
+      widget.bind(SC.Widget.Events.READY, () => {
+        widgetReady = true;
+        readyQueue.forEach((fn) => fn());
+        readyQueue = [];
+        cb();
+      });
+      widget.bind(SC.Widget.Events.PLAY, () => {
+        loading = false;
+        playing = true;
+        updateChip(); updateTransport();
+      });
+      widget.bind(SC.Widget.Events.PAUSE, () => {
+        playing = false;
+        updateChip(); updateTransport();
+      });
+      widget.bind(SC.Widget.Events.FINISH, () => {
+        // Auto-advance to next track
+        playing = false;
+        next(true);
+      });
+      widget.bind(SC.Widget.Events.PLAY_PROGRESS, (e) => {
+        if (seeking) return;
+        position = e.currentPosition;
+        updateWaveform();
+      });
+      widget.bind(SC.Widget.Events.ERROR, () => {
+        loading = false;
+        updateChip(); updateTransport();
+      });
+    }
+
+    function whenReady(fn) {
+      if (widgetReady) fn();
+      else readyQueue.push(fn);
+    }
+
+    function loadTrack(idx, opts) {
+      opts = opts || {};
+      const first = currentIdx === -1;
+      currentIdx = idx;
+      const t = PLAYLIST[idx];
+
+      // Update all UI immediately
+      fpThumbImg.src = t.art;
+      fpThumbImg.alt = t.title;
+      fpTitle.textContent = t.title;
+      fpSubtitle.textContent = `Xander · ${t.type}`;
+      setBarsForTrack(t);
+      position = 0;
+      duration = 0;
+      updateWaveform();
+
+      // Update platform icon (always shows SoundCloud since that's what's actually streaming)
+      fpPlatform.href = t.soundcloud;
+      fpPlatform.setAttribute('aria-label', 'Open on SoundCloud');
+      fpPlatform.title = 'Open on SoundCloud';
+      fpPlatform.innerHTML = svgIcon('soundcloud');
+
+      loading = true;
+      updateChip();
+      updateTransport();
+
+      // Show player + create widget on first open, then load new URL.
+      show();
+
+      ensureWidget(t, () => {
+        whenReady(() => {
+          if (first) {
+            // Widget was created with this exact URL. Just play.
+            if (opts.autoplay !== false) widget.play();
+            widget.getDuration((d) => { if (d) { duration = d; updateWaveform(); } });
+          } else {
+            widget.load(t.soundcloud, {
+              auto_play: opts.autoplay !== false,
+              hide_related: true, show_comments: false,
+              show_user: false, show_reposts: false,
+              show_teaser: false, visual: false,
+              callback: () => {
+                widget.getDuration((d) => { if (d) { duration = d; updateWaveform(); } });
+              }
+            });
+          }
+        });
+      });
+    }
+
+    function openPlayer(key) {
+      const idx = KEY_TO_IDX[key];
+      if (idx == null) return;
+      if (idx === currentIdx && (playing || loading)) {
+        // Same track already playing/loading — do nothing.
+        show();
+        return;
+      }
+      loadTrack(idx, { autoplay: true });
+    }
+
+    function show() {
+      if (!fplayer.classList.contains('show')) {
+        document.body.classList.add('fplayer-open');
+        requestAnimationFrame(() => {
+          fplayer.classList.add('show');
+          setTimeout(updateBodyPad, 50);
+        });
+      } else {
+        updateBodyPad();
+      }
+    }
+
+    function closePlayer() {
+      fplayer.classList.remove('show');
+      document.body.classList.remove('fplayer-open');
+      if (widget && playing) widget.pause();
+    }
+
+    function togglePlay() {
+      if (!widget) return;
+      whenReady(() => { playing ? widget.pause() : widget.play(); });
+    }
+
+    function next(auto) {
+      if (currentIdx === -1) return;
+      const nextIdx = (currentIdx + 1) % PLAYLIST.length;
+      loadTrack(nextIdx, { autoplay: true });
+    }
+    function prev() {
+      if (currentIdx === -1) return;
+      // If more than 3 seconds in, restart current instead of going back
+      if (position > 3000 && widget) {
+        whenReady(() => { widget.seekTo(0); if (!playing) widget.play(); });
+        position = 0; updateWaveform();
+        return;
+      }
+      const prevIdx = (currentIdx - 1 + PLAYLIST.length) % PLAYLIST.length;
+      loadTrack(prevIdx, { autoplay: true });
+    }
+
+    fpPlayBtn.addEventListener('click', togglePlay);
+    fpNextBtn.addEventListener('click', () => next(false));
+    fpPrevBtn.addEventListener('click', prev);
+    fpCloseBtn.addEventListener('click', closePlayer);
+
+    fpWaveform.addEventListener('click', (e) => {
+      if (!widget || !duration) return;
+      const r = fpWaveform.getBoundingClientRect();
+      const x = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
+      seeking = true;
+      whenReady(() => {
+        widget.seekTo(x * duration);
+        if (!playing) widget.play();
+      });
+      position = x * duration;
+      updateWaveform();
+      setTimeout(() => (seeking = false), 300);
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closePlayer();
+      else if (e.key === ' ' && document.body.classList.contains('fplayer-open') && e.target.tagName !== 'INPUT') {
+        e.preventDefault(); togglePlay();
+      }
+    });
+
+    // Wire up all [data-play-key] triggers that already exist (hero pill + featured)
+    document.querySelectorAll('[data-play-key]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        if (e.target.closest('.disco-plat-icon')) return;
+        // Elements inside discography already have their own handler; don't double-fire.
+        if (btn.closest('.disco-card')) return;
+        e.preventDefault();
+        openPlayer(btn.getAttribute('data-play-key'));
+      });
+    });
+
+    // Keep body padding in sync with player height (responsive changes)
+    window.addEventListener('resize', () => {
+      if (document.body.classList.contains('fplayer-open')) updateBodyPad();
+    });
+  })();
+  </script>
+</body>
+</html>
