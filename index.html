@@ -154,7 +154,6 @@
       transition: transform .2s;
     }
     .play-btn:hover { transform: scale(1.05); }
-    .play-btn:disabled { opacity: .35; cursor: default; transform: none; }
     .play-btn .triangle {
       width: 0; height: 0;
       border-left: 13px solid var(--bg);
@@ -232,9 +231,6 @@
       transform: scale(.9);
     }
     .featured-art-wrap:hover .featured-art-play { opacity: 1; transform: scale(1); }
-    .featured-art-wrap.soon { cursor: default; }
-    .featured-art-wrap.soon .featured-art-play { display: none; }
-    .featured-art-wrap.soon:hover .featured-art-overlay { background: rgba(0,0,0,0); }
     .featured-art-play .triangle {
       width: 0; height: 0;
       border-left: 32px solid rgba(236,232,226,.9);
@@ -939,7 +935,7 @@
           <span class="top">New single</span>
           <span>Inrush, coming soon</span>
         </div>
-        <button class="play-btn" disabled aria-label="Inrush coming soon" title="Coming soon">
+        <button class="play-btn" data-play-key="inrush" aria-label="Play Inrush">
           <span class="triangle"></span>
         </button>
       </div>
@@ -957,7 +953,7 @@
       </div>
 
       <div class="featured">
-        <div class="featured-art-wrap soon">
+        <div class="featured-art-wrap" data-play-key="inrush">
           <div class="featured-art-glow"></div>
           <img src="https://i1.sndcdn.com/artworks-qeGodj3EHPXsmMFU-Uq1m0Q-t500x500.jpg" alt="Inrush" class="featured-art">
           <div class="featured-art-overlay">
@@ -972,7 +968,7 @@
           </div>
 
           <div class="featured-player">
-            <button class="play-btn" disabled aria-label="Inrush coming soon" title="Coming soon">
+            <button class="play-btn" data-play-key="inrush" aria-label="Play Inrush">
               <span class="triangle"></span>
             </button>
             <div class="waveform-visual" id="featured-waveform"></div>
@@ -980,7 +976,9 @@
           </div>
 
           <div class="platform-grid">
-            <div class="platform-row soon"><span>SoundCloud</span><span>Soon</span></div>
+            <a href="https://soundcloud.com/xxxxander/inrush" target="_blank" rel="noopener" class="platform-row">
+              <span>SoundCloud</span><span class="action">Listen ↗</span>
+            </a>
             <div class="platform-row soon"><span>Spotify</span><span>Soon</span></div>
             <div class="platform-row soon"><span>Apple Music</span><span>Soon</span></div>
             <div class="platform-row soon"><span>Amazon Music</span><span>Soon</span></div>
@@ -1187,8 +1185,7 @@
     MIXES.forEach((m, i) => { m.key = 'mix-' + i; m.art = 'avatar.jpg'; });
 
     // Unified playlist used by the floating player for skip nav. Order matches on-page order (top to bottom).
-    // Inrush is unreleased — keep it out of the player until it drops.
-    const PLAYLIST = [...DISCO, ...MIXES];
+    const PLAYLIST = [INRUSH, ...DISCO, ...MIXES];
     const KEY_TO_IDX = {};
     PLAYLIST.forEach((t, i) => KEY_TO_IDX[t.key] = i);
 
